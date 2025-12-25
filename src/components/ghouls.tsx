@@ -58,13 +58,13 @@ export function Ghouls({ onBite, textBounds }: GhoulsProps) {
         y = Math.random() * 100
     }
 
-    // Target the 2026 text area (roughly center of screen)
+    // Target the 2026 text area - spread across the text width
     const newGhoul: Ghoul = {
       id,
       x,
       y,
-      targetX: 50 + (Math.random() - 0.5) * 15,
-      targetY: 35 + (Math.random() - 0.5) * 10, // Aim higher where 2026 is
+      targetX: 35 + Math.random() * 30, // Spread across 35-65% (where 2026 text is)
+      targetY: 32 + Math.random() * 12, // Vertical spread where 2026 is (~32-44%)
       speed: 0.12 + Math.random() * 0.08,
       size: 35 + Math.random() * 15,
       rotation: Math.random() * 360,
@@ -107,25 +107,30 @@ export function Ghouls({ onBite, textBounds }: GhoulsProps) {
         const distance = Math.sqrt(dx * dx + dy * dy)
         
         // Check if ghoul reached the target (2026 text area)
-        if (distance < 5 && !ghoul.isEating) {
+        if (distance < 3 && !ghoul.isEating) {
           // Ghoul reached the text - take a bite!
           if (onBite) {
             onBite(ghoul.x, ghoul.y)
           }
           setDamage(prev => prev + 1)
           
-          // After biting, pick a new target nearby
+          // After biting, pick a new target on the text
           return {
             ...ghoul,
             isEating: true,
-            targetX: 50 + (Math.random() - 0.5) * 20,
-            targetY: 35 + (Math.random() - 0.5) * 15,
+            targetX: 35 + Math.random() * 30, // Stay on text area
+            targetY: 32 + Math.random() * 12,
           }
         }
         
-        // Reset eating state when far enough
-        if (ghoul.isEating && distance > 8) {
-          return { ...ghoul, isEating: false }
+        // Reset eating state when far enough and pick new target
+        if (ghoul.isEating && distance > 5) {
+          return { 
+            ...ghoul, 
+            isEating: false,
+            targetX: 35 + Math.random() * 30,
+            targetY: 32 + Math.random() * 12,
+          }
         }
 
         const moveX = (dx / distance) * ghoul.speed

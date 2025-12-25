@@ -37,8 +37,8 @@ function SplashCursor({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current as HTMLCanvasElement;
 
     function pointerPrototype(this: {
       id: number;
@@ -755,6 +755,7 @@ function SplashCursor({
     }
 
     function resizeCanvas() {
+      if (!canvas) return false;
       const width = scaleByPixelRatio(canvas.clientWidth);
       const height = scaleByPixelRatio(canvas.clientHeight);
       if (canvas.width !== width || canvas.height !== height) {

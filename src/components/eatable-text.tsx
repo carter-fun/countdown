@@ -189,15 +189,6 @@ export function EatableText() {
           })}
         </svg>
         
-        {/* Damage warning overlay */}
-        {biteMarks.length > 5 && (
-          <div 
-            className="absolute inset-0 pointer-events-none rounded-lg"
-            style={{
-              boxShadow: `inset 0 0 ${Math.min(biteMarks.length * 10, 100)}px rgba(255, 0, 0, ${Math.min(biteMarks.length * 0.03, 0.4)})`,
-            }}
-          />
-        )}
       </div>
     </>
   )

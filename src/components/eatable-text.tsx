@@ -14,8 +14,6 @@ interface BiteMark {
 
 export function EatableText() {
   const [biteMarks, setBiteMarks] = useState<BiteMark[]>([])
-  const [repairPoints, setRepairPoints] = useState(0)
-  const [repairMode, setRepairMode] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
   const [, forceUpdate] = useState(0)
 
@@ -54,19 +52,6 @@ export function EatableText() {
     }
   }, [])
 
-  // Called when a ghoul is defeated
-  const handleGhoulDefeated = useCallback(() => {
-    setRepairPoints(prev => prev + 1)
-  }, [])
-
-  // Repair a hole by clicking on it
-  const repairHole = useCallback((biteId: number) => {
-    if (repairPoints > 0) {
-      setBiteMarks(prev => prev.filter(b => b.id !== biteId))
-      setRepairPoints(prev => prev - 1)
-    }
-  }, [repairPoints])
-
   const getBloodOpacity = (createdAt: number) => {
     const age = Date.now() - createdAt
     const fadeDuration = 2000
@@ -76,35 +61,7 @@ export function EatableText() {
 
   return (
     <>
-      <Ghouls onBite={handleBite} onGhoulDefeated={handleGhoulDefeated} />
-      
-      {/* Repair Mode Toggle Button */}
-      <div className="fixed top-32 left-6 z-50">
-        <button
-          onClick={() => setRepairMode(!repairMode)}
-          disabled={repairPoints === 0 && !repairMode}
-          className={`
-            flex items-center gap-2 px-4 py-2 rounded-full border transition-all
-            ${repairMode 
-              ? 'bg-green-500/30 border-green-400 text-green-300 animate-pulse' 
-              : repairPoints > 0 
-                ? 'bg-blue-500/30 border-blue-400 text-blue-300 hover:bg-blue-500/50 cursor-pointer' 
-                : 'bg-gray-500/20 border-gray-600 text-gray-500 cursor-not-allowed'
-            }
-            backdrop-blur-sm
-          `}
-        >
-          <span className="text-xl">🔧</span>
-          <span className="font-bold text-sm">
-            {repairMode ? 'CLICK HOLES TO REPAIR!' : `REPAIR (${repairPoints})`}
-          </span>
-        </button>
-        {repairMode && repairPoints > 0 && (
-          <p className="text-green-400 text-xs mt-2 ml-2 animate-bounce">
-            ↓ Click on holes below! ↓
-          </p>
-        )}
-      </div>
+      <Ghouls onBite={handleBite} />
       
       <div className="relative w-full max-w-[900px] mx-auto">
         <svg 
@@ -144,7 +101,6 @@ export function EatableText() {
             </filter>
           </defs>
           
-          {/* Background glow */}
           <text
             x="250"
             y="130"
@@ -158,7 +114,6 @@ export function EatableText() {
             2026
           </text>
           
-          {/* Main text with permanent bite holes */}
           <text
             x="250"
             y="130"
@@ -173,7 +128,6 @@ export function EatableText() {
             2026
           </text>
           
-          {/* Blood effects - THESE FADE OUT */}
           {biteMarks.map(bite => {
             const opacity = getBloodOpacity(bite.createdAt)
             if (opacity <= 0) return null
@@ -213,40 +167,6 @@ export function EatableText() {
               </g>
             )
           })}
-
-          {/* Clickable repair zones when in repair mode */}
-          {repairMode && biteMarks.map(bite => (
-            <g 
-              key={`repair-${bite.id}`} 
-              transform={`translate(${bite.x}, ${bite.y})`}
-              onClick={() => repairHole(bite.id)}
-              style={{ cursor: repairPoints > 0 ? 'pointer' : 'not-allowed' }}
-              className="repair-zone"
-            >
-              {/* Clickable area */}
-              <circle 
-                cx="0" 
-                cy="0" 
-                r={bite.size * 0.7}
-                fill="rgba(0, 255, 100, 0.2)"
-                stroke="rgba(0, 255, 100, 0.8)"
-                strokeWidth="2"
-                className="animate-pulse"
-                style={{ pointerEvents: 'all' }}
-              />
-              {/* Repair icon */}
-              <text
-                x="0"
-                y="5"
-                textAnchor="middle"
-                fontSize="20"
-                fill="white"
-                style={{ pointerEvents: 'none' }}
-              >
-                🔧
-              </text>
-            </g>
-          ))}
         </svg>
       </div>
     </>

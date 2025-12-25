@@ -4,7 +4,7 @@ import { LaserFlow } from "@/components/laser-flow"
 import { Countdown } from "@/components/countdown"
 import { ModeToggle } from "@/components/mode-toggle"
 import SplashCursor from "@/components/splash-cursor"
-import { Ghouls } from "@/components/ghouls"
+import { EatableText } from "@/components/eatable-text"
 
 // New Year 2026 - January 1st, 2026 at midnight
 const NEW_YEAR_2026 = new Date("2026-01-01T00:00:00")
@@ -40,33 +40,17 @@ export default function Home() {
         <ModeToggle />
       </div>
 
-      {/* Pink Ghouls Attack! */}
-      <Ghouls />
-
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
         {/* Main Title */}
         <div className="text-center mb-16">
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter">
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter mb-4">
             <span className="text-white drop-shadow-[0_0_30px_rgba(255,121,198,0.5)]">
               NEW YEAR
             </span>
           </h1>
-          <div className="mt-4">
-            <span 
-              className="text-7xl md:text-9xl lg:text-[12rem] font-black tracking-tight"
-              style={{
-                background: "linear-gradient(135deg, #FF79C6 0%, #BD93F9 50%, #8BE9FD 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-                textShadow: "0 0 80px rgba(255,121,198,0.5)",
-                filter: "drop-shadow(0 0 40px rgba(189,147,249,0.3))"
-              }}
-            >
-              2026
-            </span>
-          </div>
+          {/* Eatable 2026 with Ghouls */}
+          <EatableText />
         </div>
 
         {/* Countdown Timer */}
@@ -80,7 +64,7 @@ export default function Home() {
 
         {/* Footer Message */}
         <p className="mt-20 text-sm md:text-base text-white/50 text-center max-w-md">
-          Defend the countdown! Hover over the ghouls to destroy them! 👻
+          Defend 2026! The ghouls are eating it! Hover over them to destroy them! 👻🦷
         </p>
       </div>
 

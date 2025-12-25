@@ -9,15 +9,16 @@ interface BiteMark {
   y: number
   size: number
   rotation: number
-  createdAt: number  // timestamp for fading
+  createdAt: number
 }
 
 export function EatableText() {
   const [biteMarks, setBiteMarks] = useState<BiteMark[]>([])
+  const [repairPoints, setRepairPoints] = useState(0)
+  const [repairMode, setRepairMode] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
   const [, forceUpdate] = useState(0)
 
-  // Force re-render to update opacity based on time
   useEffect(() => {
     const interval = setInterval(() => {
       forceUpdate(n => n + 1)
@@ -53,17 +54,57 @@ export function EatableText() {
     }
   }, [])
 
-  // Calculate opacity for blood effects (fades over 2 seconds)
+  // Called when a ghoul is defeated
+  const handleGhoulDefeated = useCallback(() => {
+    setRepairPoints(prev => prev + 1)
+  }, [])
+
+  // Repair a hole by clicking on it
+  const repairHole = useCallback((biteId: number) => {
+    if (repairPoints > 0) {
+      setBiteMarks(prev => prev.filter(b => b.id !== biteId))
+      setRepairPoints(prev => prev - 1)
+    }
+  }, [repairPoints])
+
   const getBloodOpacity = (createdAt: number) => {
     const age = Date.now() - createdAt
-    const fadeDuration = 2000 // 2 seconds
+    const fadeDuration = 2000
     if (age >= fadeDuration) return 0
     return 1 - (age / fadeDuration)
   }
 
   return (
     <>
-      <Ghouls onBite={handleBite} />
+      <Ghouls onBite={handleBite} onGhoulDefeated={handleGhoulDefeated} />
+      
+      {/* Repair Mode Toggle Button */}
+      <div className="fixed top-32 left-6 z-50">
+        <button
+          onClick={() => setRepairMode(!repairMode)}
+          disabled={repairPoints === 0 && !repairMode}
+          className={`
+            flex items-center gap-2 px-4 py-2 rounded-full border transition-all
+            ${repairMode 
+              ? 'bg-green-500/30 border-green-400 text-green-300 animate-pulse' 
+              : repairPoints > 0 
+                ? 'bg-blue-500/30 border-blue-400 text-blue-300 hover:bg-blue-500/50 cursor-pointer' 
+                : 'bg-gray-500/20 border-gray-600 text-gray-500 cursor-not-allowed'
+            }
+            backdrop-blur-sm
+          `}
+        >
+          <span className="text-xl">🔧</span>
+          <span className="font-bold text-sm">
+            {repairMode ? 'CLICK HOLES TO REPAIR!' : `REPAIR (${repairPoints})`}
+          </span>
+        </button>
+        {repairMode && repairPoints > 0 && (
+          <p className="text-green-400 text-xs mt-2 ml-2 animate-bounce">
+            ↓ Click on holes below! ↓
+          </p>
+        )}
+      </div>
       
       <div className="relative w-full max-w-[900px] mx-auto">
         <svg 
@@ -80,7 +121,6 @@ export function EatableText() {
               <stop offset="100%" stopColor="#8BE9FD" />
             </linearGradient>
             
-            {/* Mask with bite marks - THESE STAY PERMANENT */}
             <mask id="biteMask">
               <rect x="-100" y="-50" width="700" height="300" fill="white" />
               
@@ -144,7 +184,6 @@ export function EatableText() {
                 transform={`translate(${bite.x}, ${bite.y}) rotate(${bite.rotation})`}
                 opacity={opacity}
               >
-                {/* Glowing edge around bite */}
                 <circle 
                   cx="0" 
                   cy="0" 
@@ -153,7 +192,6 @@ export function EatableText() {
                   stroke="rgba(255, 50, 100, 0.7)" 
                   strokeWidth="3"
                 />
-                {/* Blood drips */}
                 <line
                   x1={-bite.size * 0.2}
                   y1={bite.size * 0.4}
@@ -172,23 +210,44 @@ export function EatableText() {
                   strokeWidth="3"
                   strokeLinecap="round"
                 />
-                <circle
-                  cx={-bite.size * 0.15}
-                  cy={bite.size * 0.95}
-                  r="4"
-                  fill="rgba(255, 50, 100, 0.7)"
-                />
-                <circle
-                  cx={bite.size * 0.15}
-                  cy={bite.size * 1.15}
-                  r="3"
-                  fill="rgba(255, 50, 100, 0.6)"
-                />
               </g>
             )
           })}
+
+          {/* Clickable repair zones when in repair mode */}
+          {repairMode && biteMarks.map(bite => (
+            <g 
+              key={`repair-${bite.id}`} 
+              transform={`translate(${bite.x}, ${bite.y})`}
+              onClick={() => repairHole(bite.id)}
+              style={{ cursor: repairPoints > 0 ? 'pointer' : 'not-allowed' }}
+              className="repair-zone"
+            >
+              {/* Clickable area */}
+              <circle 
+                cx="0" 
+                cy="0" 
+                r={bite.size * 0.7}
+                fill="rgba(0, 255, 100, 0.2)"
+                stroke="rgba(0, 255, 100, 0.8)"
+                strokeWidth="2"
+                className="animate-pulse"
+                style={{ pointerEvents: 'all' }}
+              />
+              {/* Repair icon */}
+              <text
+                x="0"
+                y="5"
+                textAnchor="middle"
+                fontSize="20"
+                fill="white"
+                style={{ pointerEvents: 'none' }}
+              >
+                🔧
+              </text>
+            </g>
+          ))}
         </svg>
-        
       </div>
     </>
   )

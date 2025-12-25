@@ -26,10 +26,11 @@ interface BiteMarks {
 
 interface GhoulsProps {
   onBite?: (x: number, y: number) => void
+  onGhoulDefeated?: () => void
   textBounds?: { left: number; top: number; width: number; height: number } | null
 }
 
-export function Ghouls({ onBite, textBounds }: GhoulsProps) {
+export function Ghouls({ onBite, onGhoulDefeated, textBounds }: GhoulsProps) {
   const [ghouls, setGhouls] = useState<Ghoul[]>([])
   const [score, setScore] = useState(0)
   const [damage, setDamage] = useState(0)
@@ -149,12 +150,16 @@ export function Ghouls({ onBite, textBounds }: GhoulsProps) {
   }, [onBite])
 
   const killGhoul = (id: number) => {
-    setGhouls(prev => prev.map(ghoul => 
-      ghoul.id === id && !ghoul.isDying
-        ? { ...ghoul, isDying: true }
-        : ghoul
-    ))
-    setScore(prev => prev + 1)
+    const ghoul = ghouls.find(g => g.id === id)
+    if (ghoul && !ghoul.isDying) {
+      setGhouls(prev => prev.map(g => 
+        g.id === id ? { ...g, isDying: true } : g
+      ))
+      setScore(prev => prev + 1)
+      if (onGhoulDefeated) {
+        onGhoulDefeated()
+      }
+    }
   }
 
   return (

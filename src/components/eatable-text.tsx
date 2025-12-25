@@ -5,57 +5,67 @@ import { Ghouls } from './ghouls'
 
 interface BiteMark {
   id: number
-  x: number  // SVG viewBox coordinates (0-500)
-  y: number  // SVG viewBox coordinates (0-180)
+  x: number
+  y: number
   size: number
   rotation: number
+  createdAt: number  // timestamp for fading
 }
 
 export function EatableText() {
   const [biteMarks, setBiteMarks] = useState<BiteMark[]>([])
   const svgRef = useRef<SVGSVGElement>(null)
+  const [, forceUpdate] = useState(0)
+
+  // Force re-render to update opacity based on time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      forceUpdate(n => n + 1)
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleBite = useCallback((ghoulX: number, ghoulY: number) => {
-    // ghoulX and ghoulY are percentages (0-100) of the viewport
-    // We need to convert them to SVG viewBox coordinates (0-500 for x, 0-180 for y)
-    
     if (!svgRef.current) return
     
     const svgRect = svgRef.current.getBoundingClientRect()
     
-    // Convert viewport percentage to actual pixel position
     const viewportX = (ghoulX / 100) * window.innerWidth
     const viewportY = (ghoulY / 100) * window.innerHeight
     
-    // Check if the ghoul is actually over the SVG element
     const relativeX = viewportX - svgRect.left
     const relativeY = viewportY - svgRect.top
     
-    // Convert pixel position to SVG viewBox coordinates
-    // viewBox is "0 0 500 180"
     const svgX = (relativeX / svgRect.width) * 500
     const svgY = (relativeY / svgRect.height) * 180
     
-    // Only add bite if it's within the text area (with some margin)
     if (svgX >= -50 && svgX <= 550 && svgY >= -50 && svgY <= 230) {
       const newBite: BiteMark = {
         id: Date.now() + Math.random(),
         x: svgX,
         y: svgY,
         size: 20 + Math.random() * 30,
-        rotation: Math.random() * 360
+        rotation: Math.random() * 360,
+        createdAt: Date.now()
       }
       
       setBiteMarks(prev => [...prev, newBite])
     }
   }, [])
 
+  // Calculate opacity for blood effects (fades over 2 seconds)
+  const getBloodOpacity = (createdAt: number) => {
+    const age = Date.now() - createdAt
+    const fadeDuration = 2000 // 2 seconds
+    if (age >= fadeDuration) return 0
+    return 1 - (age / fadeDuration)
+  }
+
   return (
     <>
       <Ghouls onBite={handleBite} />
       
       <div className="relative w-full max-w-[900px] mx-auto">
-        {/* SVG container for the text with mask */}
         <svg 
           ref={svgRef}
           viewBox="0 0 500 180" 
@@ -64,22 +74,18 @@ export function EatableText() {
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            {/* Gradient for the text */}
             <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#FF79C6" />
               <stop offset="50%" stopColor="#BD93F9" />
               <stop offset="100%" stopColor="#8BE9FD" />
             </linearGradient>
             
-            {/* Mask with bite marks */}
+            {/* Mask with bite marks - THESE STAY PERMANENT */}
             <mask id="biteMask">
-              {/* White = visible */}
               <rect x="-100" y="-50" width="700" height="300" fill="white" />
               
-              {/* Bite marks as black shapes that "eat away" the text */}
               {biteMarks.map(bite => (
                 <g key={bite.id} transform={`translate(${bite.x}, ${bite.y}) rotate(${bite.rotation})`}>
-                  {/* Jagged bite shape - multiple overlapping circles for realistic bite */}
                   <circle cx="0" cy="0" r={bite.size * 0.5} fill="black" />
                   <circle cx={bite.size * 0.3} cy={-bite.size * 0.2} r={bite.size * 0.35} fill="black" />
                   <circle cx={-bite.size * 0.25} cy={bite.size * 0.2} r={bite.size * 0.3} fill="black" />
@@ -89,7 +95,6 @@ export function EatableText() {
               ))}
             </mask>
             
-            {/* Glow filter */}
             <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
               <feMerge>
@@ -113,7 +118,7 @@ export function EatableText() {
             2026
           </text>
           
-          {/* Main text with bite mask */}
+          {/* Main text with permanent bite holes */}
           <text
             x="250"
             y="130"
@@ -128,51 +133,60 @@ export function EatableText() {
             2026
           </text>
           
-          {/* Bite mark edges with blood drips */}
-          {biteMarks.map(bite => (
-            <g key={`edge-${bite.id}`} transform={`translate(${bite.x}, ${bite.y}) rotate(${bite.rotation})`}>
-              {/* Glowing edge around bite */}
-              <circle 
-                cx="0" 
-                cy="0" 
-                r={bite.size * 0.55} 
-                fill="none" 
-                stroke="rgba(255, 50, 100, 0.5)" 
-                strokeWidth="3"
-              />
-              {/* Blood drips */}
-              <line
-                x1={-bite.size * 0.2}
-                y1={bite.size * 0.4}
-                x2={-bite.size * 0.15}
-                y2={bite.size * 0.9}
-                stroke="rgba(255, 50, 100, 0.6)"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              <line
-                x1={bite.size * 0.1}
-                y1={bite.size * 0.45}
-                x2={bite.size * 0.15}
-                y2={bite.size * 1.1}
-                stroke="rgba(255, 50, 100, 0.4)"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-              <circle
-                cx={-bite.size * 0.15}
-                cy={bite.size * 0.95}
-                r="4"
-                fill="rgba(255, 50, 100, 0.5)"
-              />
-              <circle
-                cx={bite.size * 0.15}
-                cy={bite.size * 1.15}
-                r="3"
-                fill="rgba(255, 50, 100, 0.4)"
-              />
-            </g>
-          ))}
+          {/* Blood effects - THESE FADE OUT */}
+          {biteMarks.map(bite => {
+            const opacity = getBloodOpacity(bite.createdAt)
+            if (opacity <= 0) return null
+            
+            return (
+              <g 
+                key={`edge-${bite.id}`} 
+                transform={`translate(${bite.x}, ${bite.y}) rotate(${bite.rotation})`}
+                opacity={opacity}
+              >
+                {/* Glowing edge around bite */}
+                <circle 
+                  cx="0" 
+                  cy="0" 
+                  r={bite.size * 0.55} 
+                  fill="none" 
+                  stroke="rgba(255, 50, 100, 0.7)" 
+                  strokeWidth="3"
+                />
+                {/* Blood drips */}
+                <line
+                  x1={-bite.size * 0.2}
+                  y1={bite.size * 0.4}
+                  x2={-bite.size * 0.15}
+                  y2={bite.size * 0.9}
+                  stroke="rgba(255, 50, 100, 0.8)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1={bite.size * 0.1}
+                  y1={bite.size * 0.45}
+                  x2={bite.size * 0.15}
+                  y2={bite.size * 1.1}
+                  stroke="rgba(255, 50, 100, 0.6)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx={-bite.size * 0.15}
+                  cy={bite.size * 0.95}
+                  r="4"
+                  fill="rgba(255, 50, 100, 0.7)"
+                />
+                <circle
+                  cx={bite.size * 0.15}
+                  cy={bite.size * 1.15}
+                  r="3"
+                  fill="rgba(255, 50, 100, 0.6)"
+                />
+              </g>
+            )
+          })}
         </svg>
         
         {/* Damage warning overlay */}

@@ -1,65 +1,128 @@
-import Image from "next/image";
+"use client"
+
+import { LaserFlow } from "@/components/laser-flow"
+import { Countdown } from "@/components/countdown"
+import { ModeToggle } from "@/components/mode-toggle"
+import SplashCursor from "@/components/splash-cursor"
+import { Ghouls } from "@/components/ghouls"
+
+// New Year 2026 - January 1st, 2026 at midnight
+const NEW_YEAR_2026 = new Date("2026-01-01T00:00:00")
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="relative min-h-screen overflow-hidden bg-[#060010]">
+      {/* LaserFlow Background */}
+      <div className="fixed inset-0 z-0">
+        <LaserFlow
+          color="#FF79C6"
+          horizontalBeamOffset={0.0}
+          verticalBeamOffset={-0.2}
+          verticalSizing={2.5}
+          horizontalSizing={0.6}
+          fogIntensity={0.5}
+          wispIntensity={6.0}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+      </div>
+
+      {/* Splash Cursor Effect */}
+      <SplashCursor 
+        SPLAT_RADIUS={0.15}
+        SPLAT_FORCE={5000}
+        DENSITY_DISSIPATION={2.5}
+        VELOCITY_DISSIPATION={1.5}
+        COLOR_UPDATE_SPEED={8}
+        CURL={5}
+      />
+
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 z-50">
+        <ModeToggle />
+      </div>
+
+      {/* Pink Ghouls Attack! */}
+      <Ghouls />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
+        {/* Main Title */}
+        <div className="text-center mb-16">
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter">
+            <span className="text-white drop-shadow-[0_0_30px_rgba(255,121,198,0.5)]">
+              NEW YEAR
+            </span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+          <div className="mt-4">
+            <span 
+              className="text-7xl md:text-9xl lg:text-[12rem] font-black tracking-tight"
+              style={{
+                background: "linear-gradient(135deg, #FF79C6 0%, #BD93F9 50%, #8BE9FD 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+                textShadow: "0 0 80px rgba(255,121,198,0.5)",
+                filter: "drop-shadow(0 0 40px rgba(189,147,249,0.3))"
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              2026
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+
+        {/* Countdown Timer */}
+        <Countdown targetDate={NEW_YEAR_2026} />
+
+        {/* Decorative Elements */}
+        <div className="absolute top-1/4 left-10 w-2 h-2 bg-pink-500 rounded-full animate-pulse opacity-60" />
+        <div className="absolute top-1/3 right-20 w-3 h-3 bg-purple-500 rounded-full animate-pulse opacity-40" style={{ animationDelay: "0.5s" }} />
+        <div className="absolute bottom-1/4 left-1/4 w-2 h-2 bg-cyan-400 rounded-full animate-pulse opacity-50" style={{ animationDelay: "1s" }} />
+        <div className="absolute bottom-1/3 right-1/4 w-1 h-1 bg-pink-400 rounded-full animate-pulse opacity-70" style={{ animationDelay: "1.5s" }} />
+
+        {/* Footer Message */}
+        <p className="mt-20 text-sm md:text-base text-white/50 text-center max-w-md">
+          Defend the countdown! Hover over the ghouls to destroy them! 👻
+        </p>
+      </div>
+
+      {/* Global Styles */}
+      <style jsx global>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        /* Ensure dark mode background persists */
+        .dark body,
+        body {
+          background-color: #060010 !important;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: #060010;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #FF79C6, #BD93F9);
+          border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #FF79C6, #8BE9FD);
+        }
+      `}</style>
+    </main>
+  )
 }
